@@ -13,7 +13,6 @@
 #endif
 #include <vector>
 
-
 class helper {
 public:
     static int get_index_where_space(std::string text);

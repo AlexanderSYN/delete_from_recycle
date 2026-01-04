@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(demoCppProjectRemoveFIles main.cpp
         helpers/headers/helper.h
         helpers/headers/console/HConsole.h
+        helpers/headers/work_with_recycle/HWork_with_recycle.h
         helpers/cpp/helper.cpp
         helpers/cpp/console/HConsole.cpp
+        helpers/cpp/work_with_recycle/HWork_with_recycle.cpp
 )
