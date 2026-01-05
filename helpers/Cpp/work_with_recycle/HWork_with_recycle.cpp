@@ -1,6 +1,10 @@
 
 #include "../../Headers/work_with_recycle/HWork_with_recycle.h"
 
+#include <algorithm>
+
+
+
 /**
  * сравнение расширений
  *
@@ -17,37 +21,110 @@ bool HWork_with_recycle::compare_extension_ignore_case(const std::string &ext1, 
         });
 }
 
-
-bool HWork_with_recycle::clear_recycle(std::string path_to_recycle, std::vector<std::string> all_extensions_to_del) {
+/**
+ * получение всех файлов из корзины (с полным путем)
+ *
+ * @return если найдены то вернуть их, иначе пустой вектор
+ */
+std::vector<std::string> HWork_with_recycle::get_files_from_recycles() {
     try {
-        for (const auto& entry : fs::recursive_directory_iterator(path_to_recycle)) {
-            if (fs::is_regular_file(entry.path())) {
-                std::string ext = entry.path().extension().string();
+        std::vector<std::string> result;
 
-                if (ext.empty()) continue;
+        if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED)))
+            return result;
 
-                if (ext[0] == '.') {
-                    ext = ext.substr(1);
+        IShellItem* recycleItem = nullptr;
+        if (FAILED(SHGetKnownFolderItem(
+            FOLDERID_RecycleBinFolder,
+            KF_FLAG_DEFAULT,
+            nullptr,
+            IID_PPV_ARGS(&recycleItem))))
+        {
+            CoUninitialize();
+            return result;
+        }
+
+        IShellFolder* recycleFolder = nullptr;
+        recycleItem->BindToHandler(
+            nullptr, BHID_SFObject,
+            IID_PPV_ARGS(&recycleFolder)
+        );
+        recycleItem->Release();
+
+        IEnumIDList* enumItems = nullptr;
+        recycleFolder->EnumObjects(
+            nullptr, SHCONTF_NONFOLDERS, &enumItems
+        );
+
+        LPITEMIDLIST pidl;
+        ULONG fetched;
+
+        while (enumItems->Next(1, &pidl, &fetched) == S_OK) {
+            IShellItem* item = nullptr;
+
+            if (SUCCEEDED(SHCreateItemWithParent(
+                nullptr, recycleFolder,
+                pidl, IID_PPV_ARGS(&item))))
+            {
+                PWSTR path = nullptr;
+
+                if (SUCCEEDED(item->GetDisplayName(
+                    SIGDN_FILESYSPATH, &path)))
+                {
+                    std::wstring ws(path);
+                    result.emplace_back(ws.begin(), ws.end());
                 }
 
-                // проверяем все целевые расширения
-                for (const auto& target_ext : all_extensions_to_del) {
-                    if (compare_extension_ignore_case(ext, target_ext)) {
-                        if (fs::remove(entry.path())) {
-                            std::cout << "файл [" << entry.path() << "] успешно удален!" << std::endl;
-                            return true;
-                        } else {
-                            std::cout << "файл [" << entry.path() << "] не удалось удалить!" << std::endl;
-                            return false;
-                        }
+                CoTaskMemFree(path);
+                item->Release();
+            }
+
+            CoTaskMemFree(pidl);
+        }
+
+        enumItems->Release();
+        recycleFolder->Release();
+        CoUninitialize();
+
+        return result;
+
+    } catch (const std::exception &e) {
+        std::cerr << "[ERROR] " << e.what() << std::endl;
+        return {};
+    }
+}
+
+
+/**
+ * очистка корзины (путь к корзине получает функция get_files_from_recycles сама)
+ *
+ * @param all_extensions_to_del vector где находятся все расширения, которые надо удалить
+ */
+void HWork_with_recycle::clear_recycle(std::vector<std::string> all_extensions_to_del) {
+    try {
+        std::cout << "Сканирование корзины..." << std::endl;
+
+        for (auto file_path_from_recycle : get_files_from_recycles()) {
+            if (all_extensions_to_del.at(0) == "all") {
+                fs::remove(file_path_from_recycle);
+                std::cout << "Успешно удален файл [" << file_path_from_recycle << "]" << std::endl;
+            }
+            else {
+                for (auto ext : all_extensions_to_del) {
+                    if (file_path_from_recycle.ends_with("." + ext)) {
+                        fs::remove(file_path_from_recycle);
+                        std::cout << "Успешно удален файл [" << file_path_from_recycle << "]" << std::endl;
                     }
                 }
             }
+
+            std::cout << "" << std::endl;
+
         }
-        return false;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
     } catch (const std::exception &e) {
         std::cerr << "[ERROR] " << e.what() << std::endl;
-        return false;
     }
 }
 
