@@ -121,7 +121,6 @@ void HWork_with_recycle::clear_recycle(std::vector<std::string> all_extensions_t
             std::cout << "" << std::endl;
 
         }
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     } catch (const std::exception &e) {
         std::cerr << "[ERROR] " << e.what() << std::endl;

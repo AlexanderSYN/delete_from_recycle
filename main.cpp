@@ -72,16 +72,23 @@ int main() {
             for (int i = 0; i < 100; i++) {
                 std::cout << i << ") ";
                 std::cin >> tmp_extenstion;
-                if (tmp_extenstion.starts_with(".")) {
+                if (tmp_extenstion == "all") {
+                    std::cout << "заданые вами ранее расширения были удалены и добавлено только all!" << std::endl;
+                    exten_files_to_delete_from_recycle.clear();
+                    exten_files_to_delete_from_recycle.push_back("all");
+                    break;
+                }
+                else if (tmp_extenstion.starts_with(".")) {
                     std::cout << "написано же, без точки, переписывай путь!" << std::endl;
                     std::cout << "нажмите любую символы и <Enter>" << std::endl;
                     std::cin >> tmp_extenstion;
                     return 0;
                 }
-                if (tmp_extenstion == "done" || tmp_extenstion == "!" || tmp_extenstion == "~") {
+                else if (tmp_extenstion == "done" || tmp_extenstion == "!" || tmp_extenstion == "~") {
                     break;
                 }
-                exten_files_to_delete_from_recycle.push_back(tmp_extenstion);
+                else
+                    exten_files_to_delete_from_recycle.push_back(tmp_extenstion);
             }
             // start program
             start_program();
@@ -135,15 +142,15 @@ void console_thread() {
         if (command == "help") {
             std::cout << "каждые " << time_to_delete_files_from_recycle << " корзина будет очищаться (можно изменить время)" << std::endl;
             std::cout << "help - для помощи" << std::endl;
-            std::cout << "info - для инфы" << std::endl;
-            std::cout << "add (расширение) - добавить расширения" << std::endl;
-            std::cout << "del (расширение) - удалить расширение" << std::endl;
+            std::cout << "info - для информации о программы" << std::endl;
+            std::cout << "add (расширение) - добавить расширения (add all - удаляет сразу все файлы из корзины)" << std::endl;
+            std::cout << "del (расширение) - удалить расширение (del all - удаляет сразу все расширения, которые вы добавили)" << std::endl;
             std::cout << "time (время в секундах) - изменить время проверки расширений в корзине, для удалений" <<
                 std::endl;
-            std::cout << "ext - вывод всех расширений которые вы удаляете" << std::endl;
+            std::cout << "ext / extensions - вывод всех расширений которые вы удаляете" << std::endl;
             std::cout << "clrec - очистить корзину" << std::endl;
             std::cout << "cls / clear - очистить консоль" << std::endl;
-            std::cout << "ex / exit (или Ctrl + C) - для выхода из проги" << std::endl;
+            std::cout << "ex / exit (или Ctrl + C) - для выхода из программы" << std::endl;
         }
         //
         // info
@@ -152,13 +159,13 @@ void console_thread() {
             std::cout << "____DELETE_FILES_FROM_RECYCLE____" << std::endl;
             std::cout << "______PROGRAMMER: Alexander______" << std::endl;
             std::cout << "______Github: AlexanderSYN_______" << std::endl;
-            std::cout << "__________VERSION: 1.0___________" << std::endl;
+            std::cout << "__________VERSION: 2.0___________" << std::endl;
         }
 
         //
         // ext
         //
-        else if (command == "ext") {
+        else if (command == "ext" || command == "extensions") {
             for (int i = 0; i < exten_files_to_delete_from_recycle.size(); i++) {
                 std::cout << i << ") " << exten_files_to_delete_from_recycle.at(i) << std::endl;
             }
@@ -209,10 +216,23 @@ void console_thread() {
         //
         // add
         //
-        else if (command.rfind("command ", 0) == 0) {
-            if (!helper::check_extension(command.substr(4), exten_files_to_delete_from_recycle)) {
-                exten_files_to_delete_from_recycle.push_back(command.substr(4));
-                std::cout << "расширение [" << command.substr(4) << "] успешно добавлено!" << std::endl;
+        else if (command.rfind("add ", 0) == 0) {
+            if (command.substr(4) == "all") {
+                std::cout << "Удалены все старые расширения и осталось только расширение all!" << std::endl;
+                std::cout << "теперь будут удалятся все файлы!" << std::endl;
+                exten_files_to_delete_from_recycle.clear();
+                exten_files_to_delete_from_recycle.push_back("all");
+            }
+            else if (!helper::check_extension(command.substr(4), exten_files_to_delete_from_recycle)) {
+                if (exten_files_to_delete_from_recycle.at(0) == "all") {
+                    std::cout << "расширение all удалено!" << std::endl;
+                    exten_files_to_delete_from_recycle.clear();
+                    exten_files_to_delete_from_recycle.push_back(command.substr(4));
+                }
+                else {
+                    exten_files_to_delete_from_recycle.push_back(command.substr(4));
+                    std::cout << "расширение [" << command.substr(4) << "] успешно добавлено!" << std::endl;
+                }
             } else {
                 std::cout << "расширение уже есть" << std::endl;
             }
