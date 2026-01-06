@@ -91,7 +91,6 @@ time (sec)
 ext / extensions - output of all file extensions that you delete
 ```
 ext
-
 ```
 ```
 extensions
@@ -103,7 +102,7 @@ clrec
 ```
 
 cls / clear - clear the console
-``
+```
 cls
 ```
 ```
