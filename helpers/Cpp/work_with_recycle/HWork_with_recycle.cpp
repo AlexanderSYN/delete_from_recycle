@@ -105,20 +105,32 @@ void HWork_with_recycle::clear_recycle(std::vector<std::string> all_extensions_t
         std::cout << "Сканирование корзины..." << std::endl;
 
         for (auto file_path_from_recycle : get_files_from_recycles()) {
-            if (all_extensions_to_del.at(0) == "all") {
-                fs::remove(file_path_from_recycle);
-                std::cout << "Успешно удален файл [" << file_path_from_recycle << "]" << std::endl;
-            }
-            else {
-                for (auto ext : all_extensions_to_del) {
-                    if (file_path_from_recycle.ends_with("." + ext)) {
+            try {
+                if (all_extensions_to_del.at(0) == "all") {
+                    try {
                         fs::remove(file_path_from_recycle);
-                        std::cout << "Успешно удален файл [" << file_path_from_recycle << "]" << std::endl;
+                        std::cout << "файл или пустая папка [" << file_path_from_recycle << "] удален(-а) успешна!" << std::endl;
+                    } catch (const std::exception &e) {
+                        std::cout << "папка [" << file_path_from_recycle << "] удалена успешна!" << std::endl;
+                        fs::remove_all(file_path_from_recycle);
+                    }
+
+                    std::wcout.imbue(std::locale(""));
+                }
+                else {
+                    for (auto ext : all_extensions_to_del) {
+                        if (file_path_from_recycle.ends_with("." + ext)) {
+                            std::cout << "файл или пустая папка [" << file_path_from_recycle << "] удален(-а) успешна!" << std::endl;
+                            fs::remove(file_path_from_recycle);
+                        }
                     }
                 }
-            }
 
-            std::cout << "" << std::endl;
+                std::cout << "" << std::endl;
+            } catch (const std::exception &e) {
+                std::cerr << "[ERROR] " << e.what() << std::endl;
+                continue;
+            }
 
         }
 

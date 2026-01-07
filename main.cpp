@@ -9,7 +9,6 @@
 #include <locale>
 #include <windows.h>
 #include <filesystem>
-#include <atomic>
 #include <thread>
 #include <condition_variable>
 #include <mutex>
@@ -23,8 +22,6 @@
 //
 // work with recycle
 //
-#include <condition_variable>
-
 #include "helpers/Headers/work_with_recycle/HWork_with_recycle.h"
 
 namespace fs = std::filesystem;
@@ -65,7 +62,8 @@ int main() {
             exten_files_to_delete_from_recycle.push_back(tmp_extenstion);
             // start program
             start_program();
-        } else if (choice == 2) {
+        }
+        else if (choice == 2) {
             std::cout <<
                     "вводите каждый раз новое расширение нажимая <Enter> (когда закончите, напишите 'done', или '!' , или '~' (max 100 расширений))"
                     << std::endl;
@@ -202,15 +200,19 @@ void console_thread() {
                 std::cerr << "[ERROR] " << e.what() << std::endl;
                 std::cout << "возможно вы не ввели неправильно время, надо писать примерно так (в секундах) - 12" << std::endl;
             }
-        } else if (command == "clrec") {
+        }
+        else if (command == "clrec") {
             // очистка корзины
             char choice;
             std::cout << "вы уверены удалить файлы? (Y/N): ";
             std::cin >> choice;
             if (std::tolower(choice) == 'y') {
                 HWork_with_recycle::clear_recycle(exten_files_to_delete_from_recycle);
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
             } else {
                 std::cout << "действие отменено!" << std::endl;
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             }
         }
         //

@@ -12,6 +12,8 @@
 #include <propkey.h>
 #include <propsys.h>
 
+#include "../console/HConsole.h"
+
 namespace fs = std::filesystem;
 
 static std::chrono::seconds time_to_delete_files_from_recycle = static_cast<std::chrono::seconds>(300);// in sec
