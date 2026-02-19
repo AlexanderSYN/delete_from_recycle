@@ -1,5 +1,5 @@
 # delete files from recycle auto
-# while program only for russia (EN version is lower)
+# while program only for russia (The English version will be released later)
 
 # RU
 # программа создана для очистки корзины после заданое время (Only Windows 10/11)
